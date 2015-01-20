@@ -1,6 +1,7 @@
 require 'anemone'
 require 'cgi'
 require 'pg'
+require 'active_record'
 
 #url = "http://hopamviet.com/"
 url = "http://hopamviet.com/chord/alphabet/a"
@@ -78,10 +79,33 @@ Anemone.crawl(url, options) do |anemone|
       # Get url name of the song
       puts page.url.to_s.split("/").last
 
-      # Get song name
-      name = page.doc.xpath("//h3")
-      name = name.to_s.gsub(/<\/?[^>]*>/, "").gsub(/\\s+/, " ").strip
-      puts name
+      ## Get song name
+      #name = page.doc.xpath("//h3")
+      #name = name.to_s.gsub(/<\/?[^>]*>/, "").gsub(/\s+/, " ").strip
+      #puts name
+
+      ## Get lyric
+      #lyric = page.doc.xpath("//div[@id='lyric']")
+      #puts lyric.to_s
+      ## the gsub br is used for case that we want to handle line break
+      #lyric = lyric.to_s.gsub(/<\/?br[^>]*>/, "").
+      #gsub(/<\/?[^>]*>/, "").gsub(/\\n+/, "\n").gsub(/\s+/, " ").strip
+      #puts lyric
+
+      # Get song information
+      info = page.doc.xpath("//div[@class='ibar']")
+      # remove h3 node from the info
+      info.children.each do |node|
+        node.remove if node.name == "h3"
+      end
+      info = info.to_s.gsub(/<\/?[^>]*>/, "").gsub(/\n+/, "\n").gsub(/\s+/, " ").strip.split("|")
+      composer = info[0].gsub(/^([^:])+:/, "").strip # start with anything but a colon, repeat until a colon appears
+      puts composer
+      genre = info[1].strip
+      puts genre
+      melody = info[2].gsub(/^([^:])+:/, "").strip
+      puts melody
+
     end
   end
 
